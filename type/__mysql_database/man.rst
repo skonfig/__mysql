@@ -1,11 +1,8 @@
 cdist-type__mysql_database(7)
 =============================
+Manage a MySQL database
+
 Benedikt Koeppel <code@benediktkoeppel.ch>
-
-
-NAME
-----
-cdist-type__mysql_database - Manage a MySQL database
 
 
 DESCRIPTION
@@ -19,28 +16,28 @@ None.
 
 OPTIONAL PARAMETERS
 -------------------
-name::
+name
    The name of the database to install
    defaults to the object id
 
-user::
+user
    A user that should have access to the database
 
-password::
+password
    The password for the user who manages the database
 
 
 EXAMPLES
 --------
 
---------------------------------------------------------------------------------
-__mysql_database "cdist" --name "cdist" --user "myuser" --password "mypwd"
---------------------------------------------------------------------------------
+.. code-block:: sh
+
+    __mysql_database "cdist" --name "cdist" --user "myuser" --password "mypwd"
 
 
 SEE ALSO
 --------
-- cdist-type(7)
+- `cdist-type(7) <cdist-type.html>`_
 
 
 COPYING
