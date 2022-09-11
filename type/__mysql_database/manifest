@@ -18,6 +18,11 @@
 # along with cdist. If not, see <http://www.gnu.org/licenses/>.
 #
 
+
+# Whatever the details, we'll need MySQL/MariaDB
+__mysql
+
+
 if [ -f "$__object/parameter/user" ]
 then
     user="$( cat "$__object/parameter/user" )"

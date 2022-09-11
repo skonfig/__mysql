@@ -18,14 +18,8 @@
 # along with cdist. If not, see <http://www.gnu.org/licenses/>.
 #
 
-state_is="$( cat "$__object/explorer/state" )"
 
 state_should="$( cat "$__object/parameter/state" )"
-
-if [ "$state_is" = "$state_should" ]
-then
-    exit 0
-fi
 
 if [ -f "$__object/parameter/name" ]
 then
@@ -47,6 +41,32 @@ else
     else
         password=''
     fi
+fi
+
+# Current state
+# Not an exploerer, to avoid issues with mysql not installed YET
+check_user="$( $__remote_exec "$__target_host" "mysql -B -N -e \"select user from mysql.user where user = '$name' and host = '$host'\"" )"
+
+if [ -n "$check_user" ]
+then
+    if [ -n "$password" ]
+    then
+        check_password="$( $__remote_exec "$__target_host" "mysql -B -N -e \"select user from mysql.user where user = '$name' and host = '$host' and password = password( '$password' )\"" )"
+    fi
+
+    if [ -n "$password" ] && [ -z "$check_password" ]
+    then
+        state_is='change-password'
+    else
+        state_is='present'
+    fi
+else
+    state_is='absent'
+fi
+
+if [ "$state_is" = "$state_should" ]
+then
+    exit 0
 fi
 
 if [ "$state_is" = 'absent' ] && [ "$state_should" = 'present' ]
