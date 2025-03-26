@@ -17,15 +17,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this set. If not, see <http://www.gnu.org/licenses/>.
 #
+# Prints "present" if the database exists on the server, "absent" otherwise.
+#
 
-if [ -f "$__object/parameter/name" ]
+if test -f "${__object:?}/parameter/name"
 then
-    name="$( cat "$__object/parameter/name" )"
+    name=$(cat "${__object:?}/parameter/name")
 else
-    name="$__object_id"
+    name=${__object_id:?}
 fi
 
-if [ -n "$( mysql -B -N -e "show databases like '$name'" )" ]
+if test -n "$(mysql -B -N -e "SHOW DATABASES LIKE '${name}'")"
 then
     echo 'present'
 else

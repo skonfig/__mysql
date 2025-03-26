@@ -18,35 +18,35 @@
 # along with this set. If not, see <http://www.gnu.org/licenses/>.
 #
 
-if [ -f "$__object/parameter/user" ]
+if test -f "${__object:?}/parameter/user"
 then
-    user="$( cat "$__object/parameter/user" )"
+    user=$(cat "${__object:?}/parameter/user")
 fi
 
-if [ -f "$__object/parameter/password" ]
+if test -f "${__object:?}/parameter/password"
 then
-    password="$( cat "$__object/parameter/password" )"
+    password=$(cat "${__object:?}/parameter/password")
 fi
 
-if [ -n "$user" ] && [ -n "$password" ]
+if test -n "${user}" && test -n "${password}"
 then
-    if [ -f "$__object/parameter/name" ]
+    if test -f "${__object:?}/parameter/name"
     then
-        database="$( cat "$__object/parameter/name" )"
+        database=$(cat "${__object:?}/parameter/name")
     else
-        database="$__object_id"
+        database=${__object_id:?}
     fi
 
-    state_should="$( cat "$__object/parameter/state" )"
+    state_should=$(cat "${__object:?}/parameter/state")
 
-    __mysql_user "$user" \
-        --password "$password" \
-        --state "$state_should"
+    __mysql_user "${user}" \
+        --password "${password}" \
+        --state "${state_should}"
 
-    # removing user should remove all user's privileges
-    require="__mysql_user/$user" \
-        __mysql_privileges "$database/$user" \
-            --database "$database" \
-            --user "$user" \
-            --state "$state_should"
+    # removing the user should also remove all of the user's privileges
+    require="__mysql_user/${user}" \
+    __mysql_privileges "${database}/${user}" \
+        --database "${database}" \
+        --user "${user}" \
+        --state "${state_should}"
 fi

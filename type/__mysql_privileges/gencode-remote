@@ -18,38 +18,30 @@
 # along with this set. If not, see <http://www.gnu.org/licenses/>.
 #
 
-state_is="$( cat "$__object/explorer/state" )"
+state_is=$(cat "${__object:?}/explorer/state")
+state_should=$(cat "${__object:?}/parameter/state")
 
-state_should="$( cat "$__object/parameter/state" )"
+test "${state_is}" != "${state_should}" || exit 0
 
-if [ "$state_is" = "$state_should" ]
+privileges=$(cat "${__object:?}/parameter/privileges")
+database=$(cat "${__object:?}/parameter/database")
+table=$(cat "${__object:?}/parameter/table")
+user=$(cat "${__object:?}/parameter/user")
+host=$(cat "${__object:?}/parameter/host")
+
+if [ "${table}" != '*' ]
 then
-    exit 0
+    table="\`${table}\`"
 fi
 
-privileges="$( cat "$__object/parameter/privileges" )"
-
-database="$( cat "$__object/parameter/database" )"
-
-table="$( cat "$__object/parameter/table" )"
-
-user="$( cat "$__object/parameter/user" )"
-
-host="$( cat "$__object/parameter/host" )"
-
-if [ "$table" != '*' ]
-then
-    # shellcheck disable=SC2016
-    table="$( printf '`%s`' "$table" )"
-fi
-
-case "$state_should" in
-    present)
-        echo "mysql -e 'grant $privileges on \`$database\`.$table to \`$user\`@\`$host\`'"
-        echo "grant $privileges on $database.$table to $user@$host" >> "$__messages_out"
-    ;;
-    absent)
-        echo "mysql -e 'revoke $privileges on \`$database\`.$table from \`$user\`@\`$host\`'"
-        echo "revoke $privileges on $database.$table from $user@$host" >> "$__messages_out"
-    ;;
+case ${state_should}
+in
+    (present)
+        echo "mysql -e 'GRANT ${privileges} ON \`${database}\`.${table} TO \`${user}\`@\`${host}\`'"
+        echo "grant ${privileges} on ${database}.${table} to ${user}@${host}" >>"${__messages_out:?}"
+        ;;
+    (absent)
+        echo "mysql -e 'REVOKE ${privileges} ON \`${database}\`.${table} FROM \`${user}\`@\`${host}\`'"
+        echo "revoke ${privileges} on ${database}.${table} from ${user}@${host}" >>"${__messages_out:?}"
+        ;;
 esac

@@ -18,29 +18,25 @@
 # along with this set. If not, see <http://www.gnu.org/licenses/>.
 #
 
-state_is="$( cat "$__object/explorer/state" )"
+state_is=$(cat "${__object:?}/explorer/state")
+state_should=$(cat "${__object:?}/parameter/state")
 
-state_should="$( cat "$__object/parameter/state" )"
+test "${state_is}" != "${state_should}" || exit 0
 
-if [ "$state_is" = "$state_should" ]
+if test -f "${__object:?}/parameter/name"
 then
-    exit 0
+    name=$(cat "${__object:?}/parameter/name")
+else
+    name=${__object_id:?}
 fi
 
-if [ -f "$__object/parameter/name" ]
-then
-    name="$( cat "$__object/parameter/name" )"
-else
-    name="$__object_id"
-fi
+host=$(cat "${__object:?}/parameter/host")
 
-host="$( cat "$__object/parameter/host" )"
-
-if [ -f "$__object/parameter/password" ]
+if test -f "${__object:?}/parameter/password"
 then
-    password="$( cat "$__object/parameter/password" )"
+    password=$(cat "${__object:?}/parameter/password")
 else
-    if [ "$state_should" = 'present' ]
+    if test "${state_should}" = 'present'
     then
         echo '--password needed' >&2
         exit 1
@@ -49,20 +45,20 @@ else
     fi
 fi
 
-if [ "$state_is" = 'absent' ] && [ "$state_should" = 'present' ]
+if test "${state_is}" = 'absent' && test "${state_should}" = 'present'
 then
-    echo "mysql -e 'create user \`$name\`@\`$host\` identified by \"$password\"'"
-    echo "create user $name@$host" >> "$__messages_out"
+    echo "mysql -e 'CREATE USER \`${name}\`@\`${host}\` IDENTIFIED BY \"${password}\"'"
+    echo "create user ${name}@${host}" >>"${__messages_out:?}"
 
-elif [ "$state_is" != 'absent' ] && [ "$state_should" = 'absent' ]
+elif test "${state_is}" != 'absent' && test "${state_should}" = 'absent'
 then
-    echo "mysql -e 'drop user \`$name\`@\`$host\`'"
-    echo "drop user $name@$host" >> "$__messages_out"
+    echo "mysql -e 'DROP USER \`${name}\`@\`${host}\`'"
+    echo "drop user ${name}@${host}" >>"${__messages_out:?}"
 
-elif [ "$state_is" = 'change-password' ]
+elif test "${state_is}" = 'change-password'
 then
     # this only works with MySQL 5.7.6 and later or MariaDB 10.1.20 and later
-    echo "mysql -e 'alter user \`$name\`@\`$host\` identified by \"$password\"'"
-    echo "mysql -e 'flush privileges'"
-    echo "change password $name@$host" >> "$__messages_out"
+    echo "mysql -e 'ALTER USER \`${name}\`@\`${host}\` IDENTIFIED BY \"${password}\"'"
+    echo "mysql -e 'FLUSH PRIVILEGES'"
+    echo "change password ${name}@${host}" >>"${__messages_out:?}"
 fi
